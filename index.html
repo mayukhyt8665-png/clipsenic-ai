@@ -1174,8 +1174,9 @@
       <a href="#features" class="mobile-nav-link">Features</a>
       <a href="#pricing" class="mobile-nav-link">Pricing</a>
       <a href="#faq" class="mobile-nav-link">FAQ</a>
-      <button type="button" class="btn btn-outline" data-modal-open="info" data-info-key="login">Login</button>
-      <a href="#url-checker" class="btn btn-yellow mobile-nav-link">Get Started</a>
+      <button type="button" class="btn btn-outline" id="mobileLoginBtn" data-modal-open="info" data-info-key="login">Login</button>
+      <a href="#url-checker" class="btn btn-yellow mobile-nav-link" id="mobileGetStartedBtn">Get Started</a>
+      <button type="button" class="btn btn-outline" id="mobileLogoutBtn" style="display:none;">Logout</button>
     </nav>
   </header>
 
@@ -2101,22 +2102,34 @@
         const login = document.getElementById('authLoginBtn');
         const signup = document.getElementById('authSignupBtn');
         const reset = document.getElementById('authResetBtn');
-        if (!logout || !login || !signup || !reset) return;
+        const mobileLogin = document.getElementById('mobileLoginBtn');
+        const mobileGetStarted = document.getElementById('mobileGetStartedBtn');
+        const mobileLogout = document.getElementById('mobileLogoutBtn');
 
         client.auth.getSession().then(function (result) {
           const user = result.data && result.data.session && result.data.session.user;
           if (user) {
-            setStatus('Signed in as ' + user.email + '. Account authentication is active.', false);
-            login.style.display = 'none';
-            signup.style.display = 'none';
-            reset.style.display = 'none';
-            logout.style.display = 'inline-flex';
+            if (mobileLogin) mobileLogin.style.display = 'none';
+            if (mobileGetStarted) mobileGetStarted.style.display = 'none';
+            if (mobileLogout) mobileLogout.style.display = 'inline-flex';
+            if (logout && login && signup && reset) {
+              setStatus('Signed in as ' + user.email + '. Account authentication is active.', false);
+              login.style.display = 'none';
+              signup.style.display = 'none';
+              reset.style.display = 'none';
+              logout.style.display = 'inline-flex';
+            }
           } else {
-            setStatus('Sign in to your ClipSenic AI account, or create a free account.', false);
-            login.style.display = 'inline-flex';
-            signup.style.display = 'inline-flex';
-            reset.style.display = 'inline-flex';
-            logout.style.display = 'none';
+            if (mobileLogin) mobileLogin.style.display = 'inline-flex';
+            if (mobileGetStarted) mobileGetStarted.style.display = 'inline-flex';
+            if (mobileLogout) mobileLogout.style.display = 'none';
+            if (logout && login && signup && reset) {
+              setStatus('Sign in to your ClipSenic AI account, or create a free account.', false);
+              login.style.display = 'inline-flex';
+              signup.style.display = 'inline-flex';
+              reset.style.display = 'inline-flex';
+              logout.style.display = 'none';
+            }
           }
         });
       }
@@ -2146,12 +2159,20 @@
           }
         }
 
-        if (event.target && event.target.id === 'authLogoutBtn') {
+        if (event.target && (event.target.id === 'authLogoutBtn' || event.target.id === 'mobileLogoutBtn')) {
+          const isMobileLogout = event.target.id === 'mobileLogoutBtn';
           const result = await client.auth.signOut();
-          if (result.error) setStatus(result.error.message, true);
-          else {
+          if (result.error) {
+            setStatus(result.error.message, true);
+          } else {
             setStatus('You are now logged out.', false);
             refreshAuthUI();
+            if (isMobileLogout) {
+              const mobileMenu = document.getElementById('mobileMenu');
+              const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+              if (mobileMenu) mobileMenu.classList.remove('open');
+              if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            }
           }
         }
 
@@ -2190,6 +2211,8 @@
       client.auth.onAuthStateChange(function () {
         refreshAuthUI();
       });
+
+      refreshAuthUI();
     })();
   </script>
 
