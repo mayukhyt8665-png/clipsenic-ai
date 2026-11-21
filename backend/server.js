@@ -121,7 +121,7 @@ async function processVideo(video, userId) {
     }
 
     const analysis = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash",
       contents: createUserContent([
         createPartFromUri(readyFile.uri, readyFile.mimeType),
         `Find up to 3 interesting, exciting or funny moments suitable
