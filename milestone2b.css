@@ -1,0 +1,176 @@
+/* Milestone 2B: Video Library & 9:16 Clips UI */
+#cs-m2b-section {
+  max-width: 1080px;
+  margin: 28px auto 48px;
+  padding: 28px 22px;
+  border-radius: 28px;
+  background: rgba(255, 250, 245, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+  font-family: inherit;
+}
+
+.cs-m2b-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.cs-m2b-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #18181b;
+}
+
+.cs-m2b-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.92rem;
+  color: #52525b;
+}
+
+.cs-m2b-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  color: #18181b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.cs-m2b-pill-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #f4f4f5;
+}
+
+.cs-m2b-pill-btn.primary {
+  background: #18181b;
+  color: #ffffff;
+  border-color: #18181b;
+}
+
+.cs-m2b-pill-btn.primary:hover:not(:disabled) {
+  background: #27272a;
+}
+
+.cs-m2b-pill-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cs-m2b-banner {
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
+.cs-m2b-banner.info {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #075985;
+}
+
+.cs-m2b-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.cs-m2b-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.cs-m2b-video-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  background: #09090b;
+  object-fit: cover;
+}
+
+.cs-m2b-clip-preview {
+  width: 100%;
+  max-height: 360px;
+  aspect-ratio: 9 / 16;
+  border-radius: 18px;
+  background: #09090b;
+  object-fit: cover;
+}
+
+.cs-m2b-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cs-m2b-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #18181b;
+  word-break: break-word;
+}
+
+.cs-m2b-meta {
+  font-size: 0.82rem;
+  color: #71717a;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cs-m2b-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #f4f4f5;
+  color: #3f3f46;
+  white-space: nowrap;
+}
+
+.cs-m2b-status.uploaded { background: #e0f2fe; color: #0369a1; }
+.cs-m2b-status.queued,
+.cs-m2b-status.processing { background: #fef3c7; color: #92400e; }
+.cs-m2b-status.completed { background: #dcfce7; color: #166534; }
+.cs-m2b-status.failed { background: #fee2e2; color: #991b1b; }
+
+.cs-m2b-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.cs-m2b-clips-zone {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px dashed rgba(15, 23, 42, 0.14);
+}
