@@ -478,6 +478,157 @@
       color: #B91C1C;
     }
 
+    .upload-box-wrap {
+      max-width: 660px;
+      margin: 16px auto 0;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 28px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-md);
+      text-align: left;
+    }
+
+    .upload-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .upload-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin: 0;
+    }
+
+    .upload-limits {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--navy-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .upload-auth-prompt {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: var(--bg);
+      border: 1px dashed var(--border-strong);
+      font-size: 0.9rem;
+      color: var(--navy-muted);
+    }
+
+    .upload-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .upload-file-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      background: var(--bg);
+      border: 1.5px dashed var(--border-strong);
+    }
+
+    .upload-file-info {
+      font-size: 0.88rem;
+      color: var(--navy-muted);
+      word-break: break-word;
+      flex: 1 1 200px;
+    }
+
+    .upload-file-info strong {
+      color: var(--navy);
+    }
+
+    .upload-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .upload-user-note {
+      font-size: 0.82rem;
+      color: var(--navy-muted);
+    }
+
+    .upload-progress-wrap {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .upload-progress-wrap.show {
+      display: flex;
+    }
+
+    .upload-progress-track {
+      width: 100%;
+      height: 10px;
+      background: var(--bg);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .upload-progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), var(--yellow));
+      border-radius: 999px;
+      transition: width 0.15s ease;
+    }
+
+    .upload-progress-text {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .upload-feedback {
+      margin-top: 4px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 16px;
+      display: none;
+      text-align: left;
+    }
+
+    .upload-feedback.show {
+      display: block;
+    }
+
+    .upload-feedback.error {
+      background: rgba(220, 38, 38, 0.08);
+      color: #B91C1C;
+    }
+
+    .upload-feedback.success {
+      background: rgba(22, 163, 74, 0.1);
+      color: #15803D;
+    }
+
     .url-feedback.success {
       background: rgba(53, 60, 250, 0.08);
       color: var(--blue);
@@ -1242,6 +1393,48 @@
             <button type="submit" class="btn btn-navy">Check Link</button>
           </form>
           <div class="url-feedback" id="urlFeedback" role="status" aria-live="polite"></div>
+        </div>
+
+        <!-- Milestone 2A: Real Video Upload (Supabase Storage + cs_videos) -->
+        <div class="upload-box-wrap" id="videoUploadCard">
+          <div class="upload-header">
+            <h2 class="upload-title">Upload Gameplay Recording</h2>
+            <span class="upload-limits">MP4, WebM, MOV • Max 50 MB</span>
+          </div>
+
+          <div class="upload-auth-prompt" id="uploadAuthPrompt">
+            <span>Sign in to upload gameplay recordings to your private ClipSenic AI storage.</span>
+            <button type="button" class="btn btn-outline" data-modal-open="info" data-info-key="login">Login to Upload</button>
+          </div>
+
+          <form class="upload-controls" id="videoUploadForm" style="display:none;" novalidate>
+            <input
+              type="file"
+              id="videoFileInput"
+              class="sr-only"
+              accept=".mp4,.webm,.mov,video/mp4,video/webm,video/quicktime"
+            />
+            <div class="upload-file-row">
+              <div class="upload-file-info" id="selectedVideoInfo">
+                No video selected. Choose an MP4, WebM, or MOV file (up to 50 MB).
+              </div>
+              <label for="videoFileInput" class="btn btn-outline" style="cursor:pointer;">Choose Video</label>
+            </div>
+
+            <div class="upload-actions-row">
+              <span class="upload-user-note" id="uploadUserNote">Signed in</span>
+              <button type="submit" class="btn btn-yellow" id="uploadVideoBtn" disabled>Upload Video</button>
+            </div>
+
+            <div class="upload-progress-wrap" id="uploadProgressWrap" aria-live="polite">
+              <div class="upload-progress-track">
+                <div class="upload-progress-bar" id="uploadProgressBar"></div>
+              </div>
+              <span class="upload-progress-text" id="uploadProgressText">Uploading: 0%</span>
+            </div>
+
+            <div class="upload-feedback" id="uploadFeedback" role="status" aria-live="polite"></div>
+          </form>
         </div>
       </div>
     </section>
@@ -2105,6 +2298,9 @@
         const mobileLogin = document.getElementById('mobileLoginBtn');
         const mobileGetStarted = document.getElementById('mobileGetStartedBtn');
         const mobileLogout = document.getElementById('mobileLogoutBtn');
+        const uploadAuthPrompt = document.getElementById('uploadAuthPrompt');
+        const videoUploadForm = document.getElementById('videoUploadForm');
+        const uploadUserNote = document.getElementById('uploadUserNote');
 
         client.auth.getSession().then(function (result) {
           const user = result.data && result.data.session && result.data.session.user;
@@ -2112,6 +2308,9 @@
             if (mobileLogin) mobileLogin.style.display = 'none';
             if (mobileGetStarted) mobileGetStarted.style.display = 'none';
             if (mobileLogout) mobileLogout.style.display = 'inline-flex';
+            if (uploadAuthPrompt) uploadAuthPrompt.style.display = 'none';
+            if (videoUploadForm) videoUploadForm.style.display = 'flex';
+            if (uploadUserNote) uploadUserNote.textContent = 'Signed in as ' + user.email;
             if (logout && login && signup && reset) {
               setStatus('Signed in as ' + user.email + '. Account authentication is active.', false);
               login.style.display = 'none';
@@ -2123,6 +2322,8 @@
             if (mobileLogin) mobileLogin.style.display = 'inline-flex';
             if (mobileGetStarted) mobileGetStarted.style.display = 'inline-flex';
             if (mobileLogout) mobileLogout.style.display = 'none';
+            if (uploadAuthPrompt) uploadAuthPrompt.style.display = 'flex';
+            if (videoUploadForm) videoUploadForm.style.display = 'none';
             if (logout && login && signup && reset) {
               setStatus('Sign in to your ClipSenic AI account, or create a free account.', false);
               login.style.display = 'inline-flex';
@@ -2213,6 +2414,224 @@
       });
 
       refreshAuthUI();
+
+      // Milestone 2A: Real Video Upload to private 'clips' bucket + 'cs_videos' table
+      const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+      const ALLOWED_EXTENSIONS = ['.mp4', '.webm', '.mov'];
+      const ALLOWED_MIME_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+      const videoFileInput = document.getElementById('videoFileInput');
+      const selectedVideoInfo = document.getElementById('selectedVideoInfo');
+      const uploadVideoBtn = document.getElementById('uploadVideoBtn');
+      const videoUploadForm = document.getElementById('videoUploadForm');
+      const uploadProgressWrap = document.getElementById('uploadProgressWrap');
+      const uploadProgressBar = document.getElementById('uploadProgressBar');
+      const uploadProgressText = document.getElementById('uploadProgressText');
+      const uploadFeedback = document.getElementById('uploadFeedback');
+
+      function showUploadFeedback(message, isError) {
+        if (!uploadFeedback) return;
+        uploadFeedback.textContent = message;
+        uploadFeedback.className = 'upload-feedback show ' + (isError ? 'error' : 'success');
+      }
+
+      function clearUploadFeedback() {
+        if (!uploadFeedback) return;
+        uploadFeedback.textContent = '';
+        uploadFeedback.className = 'upload-feedback';
+      }
+
+      function setUploadProgress(percent, label) {
+        if (!uploadProgressWrap || !uploadProgressBar || !uploadProgressText) return;
+        uploadProgressWrap.classList.add('show');
+        uploadProgressBar.style.width = Math.max(0, Math.min(100, percent)) + '%';
+        uploadProgressText.textContent = label || ('Uploading: ' + Math.round(percent) + '%');
+      }
+
+      function hideUploadProgress() {
+        if (!uploadProgressWrap || !uploadProgressBar || !uploadProgressText) return;
+        uploadProgressWrap.classList.remove('show');
+        uploadProgressBar.style.width = '0%';
+        uploadProgressText.textContent = 'Uploading: 0%';
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes < 1024 * 1024) {
+          return (bytes / 1024).toFixed(1) + ' KB';
+        }
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+      }
+
+      function validateVideoFile(file) {
+        if (!file) {
+          return 'Please select a video file first.';
+        }
+        const lowerName = (file.name || '').toLowerCase();
+        const hasValidExt = ALLOWED_EXTENSIONS.some(function (ext) {
+          return lowerName.endsWith(ext);
+        });
+        const hasValidMime = !file.type || ALLOWED_MIME_TYPES.indexOf(file.type) !== -1;
+
+        if (!hasValidExt || !hasValidMime) {
+          return 'Unsupported format. Please select an MP4, WebM, or MOV video file.';
+        }
+        if (file.size <= 0) {
+          return 'The selected file is empty.';
+        }
+        if (file.size > MAX_VIDEO_BYTES) {
+          return 'File exceeds the 50 MB limit (' + formatFileSize(file.size) + '). Please choose a smaller video.';
+        }
+        return null;
+      }
+
+      function uploadFileWithProgress(bucket, storagePath, file, accessToken, onProgress) {
+        return new Promise(function (resolve, reject) {
+          const encodedPath = storagePath.split('/').map(encodeURIComponent).join('/');
+          const endpoint = SUPABASE_URL + '/storage/v1/object/' + encodeURIComponent(bucket) + '/' + encodedPath;
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', endpoint, true);
+          xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+          xhr.setRequestHeader('apikey', SUPABASE_PUBLISHABLE_KEY);
+          xhr.setRequestHeader('x-upsert', 'false');
+
+          xhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable && typeof onProgress === 'function') {
+              onProgress((e.loaded / e.total) * 100);
+            }
+          });
+
+          xhr.addEventListener('load', function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              let errMsg = 'Upload failed (HTTP ' + xhr.status + ').';
+              try {
+                const parsed = JSON.parse(xhr.responseText);
+                if (parsed && (parsed.message || parsed.error)) {
+                  errMsg = parsed.message || parsed.error;
+                }
+              } catch (ignore) {}
+              reject(new Error(errMsg));
+            }
+          });
+
+          xhr.addEventListener('error', function () {
+            reject(new Error('Network error while uploading video. Please check your connection and try again.'));
+          });
+
+          const formData = new FormData();
+          formData.append('cacheControl', '3600');
+          formData.append('', file);
+          xhr.send(formData);
+        });
+      }
+
+      if (videoFileInput) {
+        videoFileInput.addEventListener('change', function () {
+          clearUploadFeedback();
+          hideUploadProgress();
+          const file = videoFileInput.files && videoFileInput.files[0];
+          if (!file) {
+            if (selectedVideoInfo) {
+              selectedVideoInfo.textContent = 'No video selected. Choose an MP4, WebM, or MOV file (up to 50 MB).';
+            }
+            if (uploadVideoBtn) uploadVideoBtn.disabled = true;
+            return;
+          }
+
+          const validationError = validateVideoFile(file);
+          if (validationError) {
+            if (selectedVideoInfo) {
+              selectedVideoInfo.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+            }
+            if (uploadVideoBtn) uploadVideoBtn.disabled = true;
+            showUploadFeedback(validationError, true);
+            return;
+          }
+
+          if (selectedVideoInfo) {
+            selectedVideoInfo.innerHTML = '';
+            const strong = document.createElement('strong');
+            strong.textContent = file.name;
+            selectedVideoInfo.appendChild(strong);
+            selectedVideoInfo.appendChild(document.createTextNode(' • ' + formatFileSize(file.size)));
+          }
+          if (uploadVideoBtn) uploadVideoBtn.disabled = false;
+        });
+      }
+
+      if (videoUploadForm) {
+        videoUploadForm.addEventListener('submit', async function (event) {
+          event.preventDefault();
+          clearUploadFeedback();
+
+          const sessionResult = await client.auth.getSession();
+          const session = sessionResult.data && sessionResult.data.session;
+          const user = session && session.user;
+          if (!session || !user) {
+            showUploadFeedback('Please sign in before uploading a video.', true);
+            refreshAuthUI();
+            return;
+          }
+
+          const file = videoFileInput && videoFileInput.files && videoFileInput.files[0];
+          const validationError = validateVideoFile(file);
+          if (validationError) {
+            showUploadFeedback(validationError, true);
+            return;
+          }
+
+          const safeName = (file.name || 'video.mp4').replace(/[^a-zA-Z0-9._-]/g, '_');
+          const storagePath = user.id + '/' + Date.now() + '_' + safeName;
+
+          if (uploadVideoBtn) {
+            uploadVideoBtn.disabled = true;
+            uploadVideoBtn.textContent = 'Uploading...';
+          }
+          if (videoFileInput) videoFileInput.disabled = true;
+          setUploadProgress(0, 'Starting upload...');
+
+          try {
+            await uploadFileWithProgress('clips', storagePath, file, session.access_token, function (pct) {
+              setUploadProgress(pct, 'Uploading: ' + Math.round(pct) + '%');
+            });
+
+            setUploadProgress(100, 'Saving video record...');
+            const videoTitle = (file.name || 'Untitled Video').replace(/\.[^/.]+$/, '') || file.name;
+            const insertResult = await client.from('cs_videos').insert({
+              user_id: user.id,
+              title: videoTitle,
+              source_url: null,
+              source_platform: 'upload',
+              file_name: file.name,
+              storage_path: storagePath,
+              file_size: file.size,
+              mime_type: file.type || 'video/mp4',
+              status: 'uploaded'
+            });
+
+            if (insertResult.error) {
+              throw new Error('Video uploaded to storage, but saving metadata failed: ' + insertResult.error.message);
+            }
+
+            setUploadProgress(100, 'Upload complete (100%)');
+            showUploadFeedback('Upload complete! "' + file.name + '" has been saved to your private ClipSenic AI library.', false);
+            videoUploadForm.reset();
+            if (selectedVideoInfo) {
+              selectedVideoInfo.textContent = 'No video selected. Choose an MP4, WebM, or MOV file (up to 50 MB).';
+            }
+          } catch (err) {
+            hideUploadProgress();
+            showUploadFeedback(err && err.message ? err.message : 'Video upload failed. Please try again.', true);
+          } finally {
+            if (videoFileInput) videoFileInput.disabled = false;
+            if (uploadVideoBtn) {
+              uploadVideoBtn.textContent = 'Upload Video';
+              uploadVideoBtn.disabled = !(videoFileInput && videoFileInput.files && videoFileInput.files[0]);
+            }
+          }
+        });
+      }
     })();
   </script>
 
