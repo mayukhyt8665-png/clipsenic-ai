@@ -1,7 +1,7 @@
 (function () {
   // Set this to your Render backend URL in Step 2 (e.g. "https://clipsenic-worker.onrender.com")
   // Leaving it empty keeps honest mode active: no fake AI clips or simulated progress.
-  const BACKEND_URL = window.CLIPSENIC_BACKEND_URL || '';
+  const BACKEND_URL = window.CLIPSENIC_BACKEND_URL || 'https://clipsenic-worker.onrender.com';
 
   let pollTimer = null;
   let activeVideoId = null;
