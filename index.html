@@ -2006,11 +2006,31 @@
             infoEyebrow.textContent = data.eyebrow;
             infoTitle.textContent = data.title;
             infoBody.innerHTML = '';
-            data.body.forEach(function (paragraph) {
-              const p = document.createElement('p');
-              p.textContent = paragraph;
-              infoBody.appendChild(p);
-            });
+            if (key === 'login') {
+              infoEyebrow.textContent = 'Supabase Account';
+              infoTitle.textContent = 'Login or Create Account';
+              infoBody.innerHTML = `
+                <p id="authStatus" role="status" aria-live="polite">Sign in to your ClipSenic AI account, or create a free account.</p>
+                <form id="authForm" style="display:flex;flex-direction:column;gap:12px;">
+                  <label for="authEmail" style="font-weight:700;color:var(--navy);">Email address</label>
+                  <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com"
+                    style="width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;font:inherit;color:var(--navy);">
+                  <label for="authPassword" style="font-weight:700;color:var(--navy);">Password</label>
+                  <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters"
+                    style="width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;font:inherit;color:var(--navy);">
+                  <button type="submit" class="btn btn-navy" id="authLoginBtn">Login</button>
+                  <button type="button" class="btn btn-yellow" id="authSignupBtn">Create free account</button>
+                  <button type="button" class="btn btn-ghost" id="authResetBtn">Forgot password?</button>
+                  <button type="button" class="btn btn-outline" id="authLogoutBtn" style="display:none;">Logout</button>
+                </form>`;
+              if (window.clipSenicRefreshAuthUI) window.clipSenicRefreshAuthUI();
+            } else {
+              data.body.forEach(function (paragraph) {
+                const p = document.createElement('p');
+                p.textContent = paragraph;
+                infoBody.appendChild(p);
+              });
+            }
             openModal(infoModal);
           }
           mobileMenu.classList.remove('open');
@@ -2050,5 +2070,128 @@
       });
     })();
   </script>
+
+  <!-- Supabase authentication (Milestone 2: account access only) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // Publishable key is intended for browser use. Protect data with Supabase RLS.
+      const SUPABASE_URL = 'https://uxtaqkbrigtbxmeetyqm.supabase.co';
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_hTimn71XxX-a84h2FsogPA_MxQjxPMT';
+
+      if (!window.supabase || !window.supabase.createClient) {
+        console.error('ClipSenic AI: Supabase SDK did not load.');
+        return;
+      }
+
+      const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      window.clipSenicSupabase = client;
+
+      function setStatus(message, isError) {
+        const status = document.getElementById('authStatus');
+        if (!status) return;
+        status.textContent = message;
+        status.style.color = isError ? '#B91C1C' : 'var(--navy-muted)';
+      }
+
+      function refreshAuthUI() {
+        const logout = document.getElementById('authLogoutBtn');
+        const login = document.getElementById('authLoginBtn');
+        const signup = document.getElementById('authSignupBtn');
+        const reset = document.getElementById('authResetBtn');
+        if (!logout || !login || !signup || !reset) return;
+
+        client.auth.getSession().then(function (result) {
+          const user = result.data && result.data.session && result.data.session.user;
+          if (user) {
+            setStatus('Signed in as ' + user.email + '. Account authentication is active.', false);
+            login.style.display = 'none';
+            signup.style.display = 'none';
+            reset.style.display = 'none';
+            logout.style.display = 'inline-flex';
+          } else {
+            setStatus('Sign in to your ClipSenic AI account, or create a free account.', false);
+            login.style.display = 'inline-flex';
+            signup.style.display = 'inline-flex';
+            reset.style.display = 'inline-flex';
+            logout.style.display = 'none';
+          }
+        });
+      }
+      window.clipSenicRefreshAuthUI = refreshAuthUI;
+
+      document.addEventListener('click', async function (event) {
+        if (event.target && event.target.id === 'authSignupBtn') {
+          const email = document.getElementById('authEmail').value.trim();
+          const password = document.getElementById('authPassword').value;
+          if (!email || password.length < 6) {
+            setStatus('Enter a valid email and a password with at least 6 characters.', true);
+            return;
+          }
+          const button = event.target;
+          button.disabled = true;
+          button.textContent = 'Creating account...';
+          const result = await client.auth.signUp({ email: email, password: password });
+          button.disabled = false;
+          button.textContent = 'Create free account';
+          if (result.error) {
+            setStatus(result.error.message, true);
+          } else if (result.data.session) {
+            setStatus('Account created and signed in successfully.', false);
+            refreshAuthUI();
+          } else {
+            setStatus('Account created. Check your email for the confirmation link before logging in.', false);
+          }
+        }
+
+        if (event.target && event.target.id === 'authLogoutBtn') {
+          const result = await client.auth.signOut();
+          if (result.error) setStatus(result.error.message, true);
+          else {
+            setStatus('You are now logged out.', false);
+            refreshAuthUI();
+          }
+        }
+
+        if (event.target && event.target.id === 'authResetBtn') {
+          const email = document.getElementById('authEmail').value.trim();
+          if (!email) {
+            setStatus('Enter your email address first, then tap Forgot password again.', true);
+            return;
+          }
+          const result = await client.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin
+          });
+          if (result.error) setStatus(result.error.message, true);
+          else setStatus('If an account exists for this email, a password-reset link has been sent.', false);
+        }
+      });
+
+      document.addEventListener('submit', async function (event) {
+        if (!event.target || event.target.id !== 'authForm') return;
+        event.preventDefault();
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const button = document.getElementById('authLoginBtn');
+        button.disabled = true;
+        button.textContent = 'Signing in...';
+        const result = await client.auth.signInWithPassword({ email: email, password: password });
+        button.disabled = false;
+        button.textContent = 'Login';
+        if (result.error) setStatus(result.error.message, true);
+        else {
+          setStatus('Login successful. You are signed in.', false);
+          refreshAuthUI();
+        }
+      });
+
+      client.auth.onAuthStateChange(function () {
+        refreshAuthUI();
+      });
+    })();
+  </script>
+
 </body>
 </html>
