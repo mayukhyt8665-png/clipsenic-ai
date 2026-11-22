@@ -225,7 +225,7 @@
 
   function startPolling() {
     if (pollTimer) return;
-    pollTimer = setInterval(loadVideoLibrary, 4000);
+    pollTimer = setInterval(loadVideoLibrary, 15000);
   }
 
   function stopPolling() {
