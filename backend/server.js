@@ -374,4 +374,25 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`ClipSenic backend running on port ${PORT}`);
+
+  if (configReady) {
+    admin
+      .from("cs_videos")
+      .update({ status: "failed" })
+      .in("status", ["queued", "processing"])
+      .select("id")
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Interrupted job recovery failed:", error.message);
+          return;
+        }
+
+        if (data?.length) {
+          console.log(`Recovered ${data.length} interrupted video job(s).`);
+        }
+      })
+      .catch(error => {
+        console.error("Interrupted job recovery failed:", error.message);
+      });
+  }
 });
