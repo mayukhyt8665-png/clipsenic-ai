@@ -88,12 +88,26 @@ async function processVideo(video, userId) {
       .eq("id", video.id)
       .eq("user_id", userId);
 
-    const { data: sourceFile, error: downloadError } =
-      await admin.storage.from("clips").download(video.storage_path);
+    const { data: signedFile, error: signedUrlError } = await admin.storage
+  .from("clips")
+  .createSignedUrl(video.storage_path, 600);
 
-    if (downloadError || !sourceFile) {
-      throw new Error("Could not download the source video.");
-    }
+if (signedUrlError || !signedFile?.signedUrl) {
+  throw new Error("Could not create a source video download link.");
+}
+
+const sourceResponse = await fetch(signedFile.signedUrl);
+
+if (!sourceResponse.ok || !sourceResponse.body) {
+  throw new Error("Could not download the source video.");
+}
+
+const inputPath = path.join(workDir, "input-video");
+
+await pipeline(
+  Readable.fromWeb(sourceResponse.body),
+  createWriteStream(inputPath)
+);
 
     const inputPath = path.join(workDir, "input-video");
     await writeFile(inputPath, Buffer.from(await sourceFile.arrayBuffer()));
