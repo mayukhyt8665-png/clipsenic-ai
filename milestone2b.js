@@ -281,45 +281,61 @@
     if (hasActiveJob) startPolling();
     else stopPolling();
 
-    const signedUrls = await Promise.all(videos.map((v) => getSignedClipUrl(client, v.storage_path)));
+    
+    // Preserve existing video players while polling; only patch status/buttons.
+    const existingCards = new Map(
+      Array.from(grid.querySelectorAll('[data-video-id]')).map((card) => [card.dataset.videoId, card])
+    );
 
-    grid.innerHTML = '';
-    videos.forEach((video, idx) => {
-      const url = signedUrls[idx];
+    for (const video of videos) {
       const status = (video.status || 'uploaded').toLowerCase();
       const isBusy = status === 'queued' || status === 'processing';
+      let card = existingCards.get(video.id);
 
-      const card = document.createElement('div');
-      card.className = 'cs-m2b-card';
-      card.innerHTML = `
-        ${url
-          ? `<video class="cs-m2b-video-preview" controls playsinline preload="metadata" src="${escapeHtml(url)}"></video>`
-          : `<div class="cs-m2b-video-preview" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;font-size:0.85rem;">Preview unavailable</div>`
-        }
-        <div class="cs-m2b-card-top">
-          <h3 class="cs-m2b-card-title">${escapeHtml(video.title || video.file_name || 'Untitled Video')}</h3>
-          <span class="cs-m2b-status ${escapeHtml(status)}">${escapeHtml(status)}</span>
-        </div>
-        <div class="cs-m2b-meta">
-          <span>${formatBytes(video.file_size)}</span>
-          <span>${new Date(video.created_at).toLocaleDateString()}</span>
-        </div>
-        <div class="cs-m2b-actions">
-          <button type="button" class="cs-m2b-pill-btn primary cs-gen-btn" ${isBusy ? 'disabled' : ''}>
-            ${isBusy ? 'Processing...' : 'Generate Clips'}
-          </button>
-          <button type="button" class="cs-m2b-pill-btn cs-view-clips-btn">View Clips</button>
-        </div>
-      `;
+      if (!card) {
+        const url = await getSignedClipUrl(client, video.storage_path);
+        card = document.createElement('div');
+        card.className = 'cs-m2b-card';
+        card.dataset.videoId = video.id;
 
-      card.querySelector('.cs-gen-btn').addEventListener('click', (e) => handleGenerateClips(video, e.currentTarget));
-      card.querySelector('.cs-view-clips-btn').addEventListener('click', () => loadClipsForVideo(video));
-      grid.appendChild(card);
+        card.innerHTML = `
+          ${url
+            ? `<video class="cs-m2b-video-preview" controls playsinline preload="metadata" src="${escapeHtml(url)}"></video>`
+            : `<div class="cs-m2b-video-preview" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;font-size:0.85rem;">Preview unavailable</div>`
+          }
+          <div class="cs-m2b-card-top">
+            <h3 class="cs-m2b-card-title">${escapeHtml(video.title || video.file_name || 'Untitled Video')}</h3>
+            <span class="cs-m2b-status"></span>
+          </div>
+          <div class="cs-m2b-meta">
+            <span>${formatBytes(video.file_size)}</span>
+            <span>${new Date(video.created_at).toLocaleDateString()}</span>
+          </div>
+          <div class="cs-m2b-actions">
+            <button type="button" class="cs-m2b-pill-btn primary cs-gen-btn"></button>
+            <button type="button" class="cs-m2b-pill-btn cs-view-clips-btn">View Clips</button>
+          </div>
+        `;
 
-      if (activeVideoId && activeVideoId === video.id) {
-        loadClipsForVideo(video);
+        card.querySelector('.cs-gen-btn').addEventListener('click', (e) => handleGenerateClips(video, e.currentTarget));
+        card.querySelector('.cs-view-clips-btn').addEventListener('click', () => loadClipsForVideo(video));
+        grid.appendChild(card);
+      } else {
+        existingCards.delete(video.id);
       }
-    });
+
+      const statusEl = card.querySelector('.cs-m2b-status');
+      statusEl.className = `cs-m2b-status ${escapeHtml(status)}`;
+      statusEl.textContent = status;
+
+      const generateBtn = card.querySelector('.cs-gen-btn');
+      generateBtn.disabled = isBusy;
+      generateBtn.textContent = isBusy ? 'Processing...' : 'Generate Clips';
+    }
+
+    // Remove cards only if their source videos were deleted.
+    existingCards.forEach((card) => card.remove());
+
   }
 
   function initMilestone2B() {
