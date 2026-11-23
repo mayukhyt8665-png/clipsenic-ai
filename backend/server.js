@@ -342,9 +342,7 @@ app.post("/api/generate-clips", async (req, res) => {
       return res.status(403).json({ error: "Video storage access denied." });
     }
 
-    if (video.status === "processing" || video.status === "queued") {
-      return res.status(409).json({ error: "Video is already processing." });
-    }
+    
 
     activeJobs.add(videoId);
 
