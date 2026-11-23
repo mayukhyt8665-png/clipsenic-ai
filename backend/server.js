@@ -202,9 +202,7 @@ const clips = suggestions
   )
   .slice(0, remainingSlots);
 
-if (!clips.length && savedClips.length === 0) {
-  throw new Error("No suitable highlights were found.");
-} {
+if (!clips.length && savedClips.length === 0)  {
       throw new Error("No suitable highlights were found.");
     }
 
