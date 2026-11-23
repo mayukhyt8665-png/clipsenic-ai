@@ -172,19 +172,39 @@ await pipeline(
       raw.slice(firstBracket, lastBracket + 1)
     );
 
-    const clips = suggestions
-      .filter(item =>
-        typeof item.start === "number" &&
-        typeof item.end === "number" &&
-        item.start >= 0 &&
-        item.end > item.start &&
-        item.end - item.start >= 15 &&
-        item.end - item.start <= 45 &&
-        (!video.duration_seconds || item.end <= video.duration_seconds)
-      )
-      .slice(0, 3);
+    // Preserve clips from previous interrupted processing attempts.
+const { data: existingClips, error: existingClipsError } = await admin
+  .from("cs_clips")
+  .select("start_seconds,end_seconds")
+  .eq("video_id", video.id)
+  .eq("user_id", userId);
 
-    if (!clips.length) {
+if (existingClipsError) {
+  throw new Error("Could not check previously saved clips.");
+}
+
+const savedClips = existingClips || [];
+const remainingSlots = Math.max(0, 3 - savedClips.length);
+
+const clips = suggestions
+  .filter(item =>
+    typeof item.start === "number" &&
+    typeof item.end === "number" &&
+    item.start >= 0 &&
+    item.end > item.start &&
+    item.end - item.start >= 15 &&
+    item.end - item.start <= 45 &&
+    (!video.duration_seconds || item.end <= video.duration_seconds) &&
+    !savedClips.some(saved =>
+      Math.abs(Number(saved.start_seconds) - item.start) < 2 &&
+      Math.abs(Number(saved.end_seconds) - item.end) < 2
+    )
+  )
+  .slice(0, remainingSlots);
+
+if (!clips.length && savedClips.length === 0) {
+  throw new Error("No suitable highlights were found.");
+} {
       throw new Error("No suitable highlights were found.");
     }
 
