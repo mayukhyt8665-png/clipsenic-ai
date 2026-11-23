@@ -109,8 +109,7 @@ await pipeline(
   createWriteStream(inputPath)
 );
 
-    const inputPath = path.join(workDir, "input-video");
-    await writeFile(inputPath, Buffer.from(await sourceFile.arrayBuffer()));
+    
 
     const uploadedFile = await ai.files.upload({
       file: inputPath,
