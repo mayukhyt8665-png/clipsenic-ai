@@ -220,6 +220,7 @@ if (!clips.length && savedClips.length === 0)  {
         "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1",
         "-c:v", "libx264",
         "-preset", "ultrafast",
+        "-threads", "1",
         "-crf", "26",
         "-c:a", "aac",
         "-b:a", "128k",
