@@ -137,6 +137,12 @@ await pipeline(
     }
 
     const analysis = await ai.models.generateContent({
+    let analysis;
+const maxRetries = 3;
+
+for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  try {
+    analysis = await ai.models.generateContent({
       model: "gemini-3.8-flash",
       contents: createUserContent([
         createPartFromUri(readyFile.uri, readyFile.mimeType),
@@ -156,6 +162,22 @@ await pipeline(
         [{"title":"Amazing moment","start":30,"end":55,"score":90}]`
       ])
     });
+
+    break;
+  } catch (error) {
+    const message = String(error.message || error);
+    const temporaryError =
+      /503|429|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand/i.test(message);
+
+    if (!temporaryError || attempt === maxRetries) {
+      throw error;
+    }
+
+    const delay = [2000, 5000, 10000][attempt];
+    console.log(`Gemini temporary error. Retry ${attempt + 1} in ${delay / 1000}s.`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+}
 
     let raw = (analysis.text || "").trim();
     raw = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
