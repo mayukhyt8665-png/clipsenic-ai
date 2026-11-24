@@ -136,7 +136,7 @@ await pipeline(
       throw new Error("Video analysis timed out.");
     }
 
-    const analysis = await ai.models.generateContent({
+
     let analysis;
 const maxRetries = 3;
 
